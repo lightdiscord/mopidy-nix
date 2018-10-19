@@ -1,4 +1,4 @@
 language: nix
 
 script:
-  - nix build -f ./test/minimal.nix -v
+  - nix build -f ./test/home-manager.nix -v
