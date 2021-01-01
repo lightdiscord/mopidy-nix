@@ -8,14 +8,14 @@ let
 	file = pkgs.writeText "mopidy.conf" cfg.configuration;
 	configs = concatStringsSep ":" ([file] ++ cfg.extraConfigFiles);
 
-	mopidy = with pkgs; buildEnv {
-		name = "mopidy-with-extension-${pkgs.mopidy.version}";
+	mopidyEnv = with pkgs; buildEnv {
+		name = "mopidy-with-extensions-${pkgs.mopidy.version}";
 		paths = closePropagation cfg.extensionPackages;
-		pathsToLink = [ "/${python.sitePackages}" ];
+		pathsToLink = [ "/${mopidyPackages.python.sitePackages}" ];
 		buildInputs = [ makeWrapper ];
 		postBuild = ''
-			makeWrapper ${pkgs.mopidy}/bin/mopidy $out/bin/mopidy \
-				--prefix PYTHONPATH : $out/${python.sitePackages}
+			makeWrapper ${mopidy}/bin/mopidy $out/bin/mopidy \
+				--prefix PYTHONPATH : $out/${mopidyPackages.python.sitePackages}
 		'';
 	};
 in {
@@ -62,7 +62,7 @@ in {
 
 	config = let
 		ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p '${cfg.dataDir}'";
-		ExecStart = "${mopidy}/bin/mopidy --config ${configs}";
+		ExecStart = "${mopidyEnv}/bin/mopidy --config ${configs}";
 	in mkIf cfg.enable {
 		systemd.user.services.mopidy = {
 			Unit = {
